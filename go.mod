@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gocraft/dbr/v2 v2.7.6
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.4
 )
 
 require (
