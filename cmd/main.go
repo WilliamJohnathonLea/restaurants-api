@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/WilliamJohnathonLea/restaurants-api/notifier"
 	"github.com/WilliamJohnathonLea/restaurants-api/server"
 	"github.com/gocraft/dbr/v2"
 	"github.com/joho/godotenv"
@@ -43,6 +44,21 @@ func main() {
 
 	sess := conn.NewSession(nil)
 	defer sess.Close()
+
+	// Set up AMQP
+	amqpUrl := fmt.Sprintf(
+		"amqp://%s:%s@%s/",
+		amqpUsername,
+		amqpPassword,
+		amqpHost,
+	)
+	rn, err := notifier.NewRabbitNotifier(
+		notifier.WithURL(amqpUrl),
+	)
+	if err != nil {
+		log.Fatal("failed to connect to rabbitmq")
+	}
+	defer rn.Close()
 
 	// Set up server
 	server := server.New(
