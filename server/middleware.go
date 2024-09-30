@@ -20,7 +20,7 @@ type AuthData struct {
 	Token  string
 }
 
-func Authenticated() gin.HandlerFunc {
+func Authenticated(tokenKey string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHdr := ctx.GetHeader(authorizationHeaderKey)
 		if authHdr == "" {
@@ -43,7 +43,7 @@ func Authenticated() gin.HandlerFunc {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("invalid signing method")
 			}
-			return []byte("super_secret_key"), nil
+			return []byte(tokenKey), nil
 		})
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)

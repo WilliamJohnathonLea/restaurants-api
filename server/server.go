@@ -14,6 +14,7 @@ type RouteHandler func(*ServerApp) gin.HandlerFunc
 
 type ServerApp struct {
 	Port      int
+	TokenKey  string
 	Router    *gin.Engine
 	DbSession *dbr.Session
 	Notifier  *notifier.RabbitNotifer
@@ -52,6 +53,12 @@ func WithNotifier(rn *notifier.RabbitNotifer) ServerOpt {
 	}
 }
 
+func WithTokenKey(key string) ServerOpt {
+	return func(sa *ServerApp) {
+		sa.TokenKey = key
+	}
+}
+
 func WithRoute(method, path string, handler RouteHandler) ServerOpt {
 	return func(sa *ServerApp) {
 		sa.Router.Handle(method, path, handler(sa))
@@ -60,7 +67,7 @@ func WithRoute(method, path string, handler RouteHandler) ServerOpt {
 
 func WithAuthRoute(method, path string, handler RouteHandler) ServerOpt {
 	return func(sa *ServerApp) {
-		sa.Router.Handle(method, path, Authenticated(), handler(sa))
+		sa.Router.Handle(method, path, Authenticated(sa.TokenKey), handler(sa))
 	}
 }
 

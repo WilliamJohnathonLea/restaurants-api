@@ -28,6 +28,7 @@ func main() {
 	amqpHost := os.Getenv("AMQP_HOST")
 
 	port, _ := strconv.Atoi(os.Getenv("SERVER_PORT"))
+	tokenDecoderKey := os.Getenv("AUTH_TOKEN_DECODER_KEY")
 
 	// Open DB connection
 	dbUrl := fmt.Sprintf(
@@ -63,6 +64,7 @@ func main() {
 	// Set up server
 	server := server.New(
 		server.WithPort(port),
+		server.WithTokenKey(tokenDecoderKey),
 		server.WithDbSession(sess),
 		server.WithNotifier(rn),
 		server.WithRoute("GET", "/healthcheck", server.Health),
