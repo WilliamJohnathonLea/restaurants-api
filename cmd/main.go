@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/WilliamJohnathonLea/restaurants-api/db"
 	"github.com/WilliamJohnathonLea/restaurants-api/notifier"
 	"github.com/WilliamJohnathonLea/restaurants-api/server"
 	"github.com/gocraft/dbr/v2"
@@ -15,10 +16,10 @@ import (
 
 func main() {
 	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("failed to load environment")
-	}
+	fatalOnError(err, "failed to load environment")
 
+	dbAdminUsername := os.Getenv("DB_ADMIN_USERNAME")
+	dbAdminPassword := os.Getenv("DB_ADMIN_PASSWORD")
 	dbUsername := os.Getenv("DB_USERNAME")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
@@ -30,17 +31,19 @@ func main() {
 	port, _ := strconv.Atoi(os.Getenv("SERVER_PORT"))
 	tokenDecoderKey := os.Getenv("AUTH_TOKEN_DECODER_KEY")
 
+	// Run migrations
+	migrationDbUrl := restaurantsDbUrl(dbAdminUsername, dbAdminPassword, dbHost)
+	m, err := db.NewMigrator(migrationDbUrl, "file://migrations")
+	fatalOnError(err, "error setting up migrator")
+	defer m.Close()
+
+	err = m.Run()
+	fatalOnError(err, "error running migration")
+
 	// Open DB connection
-	dbUrl := fmt.Sprintf(
-		"postgres://%s:%s@%s/restaurants?sslmode=disable",
-		dbUsername,
-		dbPassword,
-		dbHost,
-	)
+	dbUrl := restaurantsDbUrl(dbUsername, dbPassword, dbHost)
 	conn, err := dbr.Open("postgres", dbUrl, nil)
-	if err != nil {
-		log.Fatalf("error opening db connection %+v", err)
-	}
+	fatalOnError(err, "error opening db connection")
 	defer conn.Close()
 
 	sess := conn.NewSession(nil)
@@ -56,9 +59,7 @@ func main() {
 	rn, err := notifier.NewRabbitNotifier(
 		notifier.WithURL(amqpUrl),
 	)
-	if err != nil {
-		log.Fatal("failed to connect to rabbitmq")
-	}
+	fatalOnError(err, "failed to connect to rabbitmq")
 	defer rn.Close()
 
 	// Set up server
@@ -73,4 +74,19 @@ func main() {
 
 	server.Run()
 
+}
+
+func restaurantsDbUrl(username, password, host string) string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s/restaurants?sslmode=disable",
+		username,
+		password,
+		host,
+	)
+}
+
+func fatalOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s %s", msg, err.Error())
+	}
 }
