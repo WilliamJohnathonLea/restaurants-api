@@ -64,6 +64,7 @@ func main() {
 	server := server.New(
 		server.WithPort(port),
 		server.WithDbSession(sess),
+		server.WithNotifier(rn),
 	)
 
 	server.Run()
