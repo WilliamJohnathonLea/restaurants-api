@@ -65,6 +65,8 @@ func main() {
 		server.WithPort(port),
 		server.WithDbSession(sess),
 		server.WithNotifier(rn),
+		server.WithRoute("GET", "/healthcheck", server.Health),
+		server.WithAuthRoute("GET", "/orders", server.GetOrders),
 	)
 
 	server.Run()

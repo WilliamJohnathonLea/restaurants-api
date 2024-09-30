@@ -58,6 +58,12 @@ func WithRoute(method, path string, handler RouteHandler) ServerOpt {
 	}
 }
 
+func WithAuthRoute(method, path string, handler RouteHandler) ServerOpt {
+	return func(sa *ServerApp) {
+		sa.Router.Handle(method, path, Authenticated(), handler(sa))
+	}
+}
+
 func (sa *ServerApp) Run() error {
 	addr := fmt.Sprintf(":%d", sa.Port)
 	return sa.Router.Run(addr)
