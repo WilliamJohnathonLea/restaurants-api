@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
@@ -18,7 +19,11 @@ func (m *Migrator) Close() error {
 }
 
 func (m *Migrator) Run() error {
-	return m.underlying.Up()
+	err := m.underlying.Up()
+	if err == migrate.ErrNoChange {
+		return nil
+	}
+	return err
 }
 
 func NewMigrator(dbUrl, migrationsDir string) (*Migrator, error) {

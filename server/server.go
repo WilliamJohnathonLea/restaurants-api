@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/WilliamJohnathonLea/restaurants-api/notifier"
+	"github.com/WilliamJohnathonLea/restaurants-api/services/orders"
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/dbr/v2"
 )
@@ -13,11 +14,12 @@ type ServerOpt func(*ServerApp)
 type RouteHandler func(*ServerApp) gin.HandlerFunc
 
 type ServerApp struct {
-	Port      int
-	TokenKey  string
-	Router    *gin.Engine
-	DbSession *dbr.Session
-	Notifier  *notifier.RabbitNotifer
+	Port       int
+	TokenKey   string
+	Router     *gin.Engine
+	DbSession  *dbr.Session
+	Notifier   *notifier.RabbitNotifer
+	ordersRepo orders.OrdersRepo
 }
 
 func New(opts ...ServerOpt) *ServerApp {
@@ -30,6 +32,10 @@ func New(opts ...ServerOpt) *ServerApp {
 
 	for _, opt := range opts {
 		opt(app)
+	}
+
+	if app.DbSession != nil {
+		app.ordersRepo = orders.NewRepo(app.DbSession)
 	}
 
 	return app

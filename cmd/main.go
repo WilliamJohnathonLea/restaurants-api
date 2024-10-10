@@ -11,7 +11,6 @@ import (
 	"github.com/WilliamJohnathonLea/restaurants-api/server"
 	"github.com/gocraft/dbr/v2"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -33,12 +32,13 @@ func main() {
 
 	// Run migrations
 	migrationDbUrl := restaurantsDbUrl(dbAdminUsername, dbAdminPassword, dbHost)
-	m, err := db.NewMigrator(migrationDbUrl, "file://migrations")
+	m, err := db.NewMigrator(migrationDbUrl, "file://db/migrations")
 	fatalOnError(err, "error setting up migrator")
 	defer m.Close()
 
 	err = m.Run()
 	fatalOnError(err, "error running migration")
+	m.Close() // Close the migrator's connection after success
 
 	// Open DB connection
 	dbUrl := restaurantsDbUrl(dbUsername, dbPassword, dbHost)
@@ -70,6 +70,7 @@ func main() {
 		server.WithNotifier(rn),
 		server.WithRoute("GET", "/healthcheck", server.Health),
 		server.WithAuthRoute("GET", "/orders", server.GetOrders),
+		server.WithAuthRoute("GET", "/orders/:id", server.GetOrderByID),
 	)
 
 	server.Run()
