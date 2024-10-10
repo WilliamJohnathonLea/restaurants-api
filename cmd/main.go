@@ -69,6 +69,7 @@ func main() {
 		server.WithDbSession(sess),
 		server.WithNotifier(rn),
 		server.WithRoute("GET", "/healthcheck", server.Health),
+		server.WithAuthRoute("POST", "/orders", server.PostNewOrder),
 		server.WithAuthRoute("GET", "/orders", server.GetOrders),
 		server.WithAuthRoute("GET", "/orders/:id", server.GetOrderByID),
 	)

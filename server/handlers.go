@@ -1,8 +1,11 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
 
+	"github.com/WilliamJohnathonLea/restaurants-api/notifier"
+	"github.com/WilliamJohnathonLea/restaurants-api/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/dbr/v2"
 )
@@ -37,7 +40,7 @@ func GetOrderByID(sa *ServerApp) gin.HandlerFunc {
 
 		// Handle other error
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error": "internal server error",
 			})
 			return
@@ -45,4 +48,40 @@ func GetOrderByID(sa *ServerApp) gin.HandlerFunc {
 
 		ctx.JSON(http.StatusOK, order)
 	}
+}
+
+func PostNewOrder(sa *ServerApp) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var order types.Order
+		err := ctx.BindJSON(&order)
+		if err != nil {
+			setErrorResponse(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		orderBytes, err := json.Marshal(order)
+		if err != nil {
+			setErrorResponse(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		err = sa.notifier.Notify(notifier.RabbitNotification{
+			Exchange:   "restaurant_notifications",
+			RoutingKey: order.RestaurantID,
+			Mandatory:  true,
+			Body:       orderBytes,
+		})
+		if err != nil {
+			setErrorResponse(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		ctx.JSON(http.StatusAccepted, order)
+	}
+}
+
+func setErrorResponse(ctx *gin.Context, httpCode int, err error) {
+	ctx.JSON(httpCode, gin.H{
+		"error": err.Error(),
+	})
 }

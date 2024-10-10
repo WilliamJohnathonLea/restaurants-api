@@ -14,11 +14,11 @@ type ServerOpt func(*ServerApp)
 type RouteHandler func(*ServerApp) gin.HandlerFunc
 
 type ServerApp struct {
-	Port       int
-	TokenKey   string
-	Router     *gin.Engine
-	DbSession  *dbr.Session
-	Notifier   *notifier.RabbitNotifer
+	port       int
+	tokenKey   string
+	router     *gin.Engine
+	dbSession  *dbr.Session
+	notifier   *notifier.RabbitNotifer
 	ordersRepo orders.OrdersRepo
 }
 
@@ -27,15 +27,15 @@ func New(opts ...ServerOpt) *ServerApp {
 	router := gin.Default()
 	port := 8080
 
-	app.Router = router
-	app.Port = port
+	app.router = router
+	app.port = port
 
 	for _, opt := range opts {
 		opt(app)
 	}
 
-	if app.DbSession != nil {
-		app.ordersRepo = orders.NewRepo(app.DbSession)
+	if app.dbSession != nil {
+		app.ordersRepo = orders.NewRepo(app.dbSession)
 	}
 
 	return app
@@ -43,41 +43,41 @@ func New(opts ...ServerOpt) *ServerApp {
 
 func WithDbSession(sess *dbr.Session) ServerOpt {
 	return func(sa *ServerApp) {
-		sa.DbSession = sess
+		sa.dbSession = sess
 	}
 }
 
 func WithPort(port int) ServerOpt {
 	return func(sa *ServerApp) {
-		sa.Port = port
+		sa.port = port
 	}
 }
 
 func WithNotifier(rn *notifier.RabbitNotifer) ServerOpt {
 	return func(sa *ServerApp) {
-		sa.Notifier = rn
+		sa.notifier = rn
 	}
 }
 
 func WithTokenKey(key string) ServerOpt {
 	return func(sa *ServerApp) {
-		sa.TokenKey = key
+		sa.tokenKey = key
 	}
 }
 
 func WithRoute(method, path string, handler RouteHandler) ServerOpt {
 	return func(sa *ServerApp) {
-		sa.Router.Handle(method, path, handler(sa))
+		sa.router.Handle(method, path, handler(sa))
 	}
 }
 
 func WithAuthRoute(method, path string, handler RouteHandler) ServerOpt {
 	return func(sa *ServerApp) {
-		sa.Router.Handle(method, path, Authenticated(sa.TokenKey), handler(sa))
+		sa.router.Handle(method, path, Authenticated(sa.tokenKey), handler(sa))
 	}
 }
 
 func (sa *ServerApp) Run() error {
-	addr := fmt.Sprintf(":%d", sa.Port)
-	return sa.Router.Run(addr)
+	addr := fmt.Sprintf(":%d", sa.port)
+	return sa.router.Run(addr)
 }
