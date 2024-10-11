@@ -66,8 +66,8 @@ func PostNewOrder(sa *ServerApp) gin.HandlerFunc {
 		}
 
 		err = sa.notifier.Notify(notifier.RabbitNotification{
-			Exchange:   "restaurant_notifications",
-			RoutingKey: order.RestaurantID,
+			Exchange:   "", // default exchange
+			RoutingKey: "new_orders",
 			Mandatory:  true,
 			Body:       orderBytes,
 		})

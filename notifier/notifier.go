@@ -46,8 +46,6 @@ func (rn *RabbitNotifer) Notify(notification RabbitNotification) error {
 	} else {
 		return errors.New("message was not delivered")
 	}
-
-	// TODO Check for message returns
 }
 
 func WithURL(url string) RabbitOpts {
