@@ -3,6 +3,7 @@ BEGIN TRANSACTION;
 CREATE TABLE orders(
     id uuid PRIMARY KEY,
     restaurant_id uuid NOT NULL,
+    user_id uuid NOT NULL,
     created_at TIMESTAMP NOT NULL,
     completed_at TIMESTAMP
     -- CONSTRAINT fk_restaurant FOREIGN KEY(restaurant_id) REFERENCES restaurants(id)

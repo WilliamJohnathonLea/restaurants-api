@@ -5,6 +5,7 @@ import "time"
 type Order struct {
 	ID           string     `json:"id,omitempty"`
 	RestaurantID string     `json:"restaurantId"`
+	UserID       string     `json:"userId"`
 	Items        []LineItem `json:"items"`
 	CreatedAt    time.Time  `json:"createdAt"`
 	CompletedAt  *time.Time `json:"completedAt,omitempty"`
