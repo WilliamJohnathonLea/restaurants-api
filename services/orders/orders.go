@@ -27,7 +27,7 @@ func (or *SqlOrdersRepo) GetOrderByID(orderID string) (types.Order, error) {
 	var order types.Order
 	var items []types.LineItem
 
-	err := or.db.Select("id", "restaurant_id", "created_at", "completed_at").
+	err := or.db.Select("id", "restaurant_id", "user_id", "created_at", "completed_at").
 		From("orders").
 		Where("id = ?", orderID).
 		LoadOne(&order)
