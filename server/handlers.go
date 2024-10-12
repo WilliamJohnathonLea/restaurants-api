@@ -69,6 +69,7 @@ func PostNewOrder(sa *ServerApp) gin.HandlerFunc {
 			Exchange:   "", // default exchange
 			RoutingKey: "new_orders",
 			Mandatory:  true,
+			Headers:    map[string]interface{}{"user_id": order.UserID},
 			Body:       orderBytes,
 		})
 		if err != nil {

@@ -31,6 +31,7 @@ func (rn *RabbitNotifer) Notify(notification RabbitNotification) error {
 		false,
 		amqp.Publishing{
 			ContentType: "text/plain",
+			Headers:     notification.Headers,
 			Body:        notification.Body,
 		},
 	)
