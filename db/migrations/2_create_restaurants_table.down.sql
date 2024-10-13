@@ -1,0 +1,8 @@
+BEGIN TRANSACTION;
+
+ALTER TABLE orders
+DROP CONSTRAINT fk_restaurant;
+
+DROP TABLE restaurants;
+
+COMMIT;

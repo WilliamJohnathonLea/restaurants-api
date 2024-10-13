@@ -1,6 +1,7 @@
 package restaurants
 
 import (
+	"github.com/WilliamJohnathonLea/restaurants-api/db"
 	"github.com/WilliamJohnathonLea/restaurants-api/types"
 	"github.com/gocraft/dbr/v2"
 )
@@ -27,12 +28,38 @@ func (rr *SqlRestaurantsRepo) CreateMenu(restaurantID string, menu types.Menu) e
 
 // CreateRestaurant implements RestaurantsRepo.
 func (rr *SqlRestaurantsRepo) CreateRestaurant(restaurant types.Restaurant) error {
-	panic("unimplemented")
+	tx, err := rr.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = db.WithTx(tx, func() error {
+		_, err := tx.InsertInto("restaurants").
+			Columns("id", "name").
+			Values(restaurant.ID, restaurant.Name).
+			Exec()
+		return err
+	})
+
+	return err
 }
 
 // GetRestaurantByID implements RestaurantsRepo.
 func (rr *SqlRestaurantsRepo) GetRestaurantByID(id string) (types.Restaurant, error) {
-	panic("unimplemented")
+	var restaurant types.Restaurant
+	tx, err := rr.db.Begin()
+	if err != nil {
+		return restaurant, err
+	}
+
+	err = db.WithTx(tx, func() error {
+		return tx.Select("id", "name").
+			From("restaurants").
+			Where("id = ?", id).
+			LoadOne(&restaurant)
+	})
+
+	return restaurant, err
 }
 
 // GetRestaurantMenusByID implements RestaurantsRepo.

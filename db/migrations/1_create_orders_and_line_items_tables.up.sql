@@ -6,7 +6,6 @@ CREATE TABLE orders(
     user_id uuid NOT NULL,
     created_at TIMESTAMP NOT NULL,
     completed_at TIMESTAMP
-    -- CONSTRAINT fk_restaurant FOREIGN KEY(restaurant_id) REFERENCES restaurants(id)
 );
 
 CREATE TABLE line_items(
@@ -16,7 +15,7 @@ CREATE TABLE line_items(
     name VARCHAR(255) NOT NULL,
     price NUMERIC NOT NULL,
     quantity INTEGER NOT NULL,
-    -- CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(id),
+    CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(id),
     CONSTRAINT check_quantity CHECK(quantity > 0)
 );
 

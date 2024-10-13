@@ -1,3 +1,7 @@
+BEGIN TRANSACTION;
+
 DROP TABLE line_items;
 
 DROP TABLE orders;
+
+COMMIT;

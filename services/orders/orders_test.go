@@ -46,6 +46,11 @@ func (s *OrdersRepoSuite) SetupTest() {
 		CreatedAt: time.UnixMilli(0).UTC(),
 	}
 
+	s.db.InsertInto("restaurants").
+		Columns("id", "name").
+		Values(s.order.RestaurantID, "Test").
+		Exec()
+
 	s.db.InsertInto("orders").
 		Columns("id", "restaurant_id", "user_id", "created_at").
 		Values(s.order.ID, s.order.RestaurantID, s.order.UserID, s.order.CreatedAt).
