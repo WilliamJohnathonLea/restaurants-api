@@ -11,5 +11,5 @@ type MenuItem struct {
 	ID     string  `json:"id,omitempty"`
 	MenuID string  `json:"menuId"`
 	Name   string  `json:"name"`
-	Price  float32 `json:"price"`
+	Price  float64 `json:"price"`
 }
