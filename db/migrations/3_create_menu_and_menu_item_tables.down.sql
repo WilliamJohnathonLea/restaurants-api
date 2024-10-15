@@ -1,0 +1,6 @@
+BEGIN TRANSACTION;
+
+DROP TABLE menu_items;
+DROP TABLE menus;
+
+COMMIT:

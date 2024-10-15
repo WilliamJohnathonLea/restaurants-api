@@ -10,7 +10,7 @@ type RestaurantsRepo interface {
 	CreateRestaurant(types.Restaurant) error
 	GetRestaurantByID(string) (types.Restaurant, error)
 	GetRestaurantMenusByID(string) (types.RestaurantMenus, error)
-	CreateMenu(string, types.Menu) error
+	CreateMenu(types.Menu) error
 }
 
 type SqlRestaurantsRepo struct {
@@ -22,8 +22,32 @@ func NewRepo(db *dbr.Session) RestaurantsRepo {
 }
 
 // CreateMenu implements RestaurantsRepo.
-func (rr *SqlRestaurantsRepo) CreateMenu(restaurantID string, menu types.Menu) error {
-	panic("unimplemented")
+func (rr *SqlRestaurantsRepo) CreateMenu(menu types.Menu) error {
+	tx, err := rr.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = db.WithTx(tx, func() error {
+		_, err := tx.InsertInto("menus").
+			Columns("id", "restaurant_id", "name").
+			Values(menu.ID, menu.RestaurantID, menu.Name).
+			Exec()
+
+		if len(menu.Items) > 0 {
+			itemQuery := tx.InsertInto("menu_items").
+				Columns("id", "menu_id", "name", "price")
+
+			for _, item := range menu.Items {
+				itemQuery.Values(item.ID, menu.ID, item.Name, item.Price)
+			}
+			_, err = itemQuery.Exec()
+		}
+
+		return err
+	})
+
+	return err
 }
 
 // CreateRestaurant implements RestaurantsRepo.

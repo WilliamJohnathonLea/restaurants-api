@@ -58,6 +58,23 @@ func (s *RestaurantRepoSuite) TestGetRestaurantByID() {
 	})
 }
 
+func (s *RestaurantRepoSuite) TestCreateMenu() {
+	rID := uuid.NewString()
+	expected := types.Restaurant{
+		ID: rID,
+		Name: "Test",
+	}
+	err := s.repo.CreateRestaurant(expected)
+	s.Nil(err, "a restaurant is required to attach a menu to")
+
+	err = s.repo.CreateMenu(types.Menu{
+		ID: uuid.NewString(),
+		RestaurantID: rID,
+		Name: "Starters",
+	})
+	s.Nil(err)
+}
+
 func TestRunSuite(t *testing.T) {
 	repoSuite := &RestaurantRepoSuite{}
 	m, err := db.NewMigrator(dbUrl, migrationsUrl)
@@ -65,7 +82,10 @@ func TestRunSuite(t *testing.T) {
 		t.Fatalf("error setting up migrator %s", err.Error())
 	}
 	defer m.Close()
-	m.Run()
+	err = m.Run()
+	if err != nil {
+		t.Fatalf("error running migration %s", err.Error())
+	}
 
 	conn, err := dbr.Open("postgres", dbUrl, nil)
 	if err != nil {
