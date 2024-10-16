@@ -8,6 +8,7 @@ import (
 	"github.com/WilliamJohnathonLea/restaurants-api/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gocraft/dbr/v2"
+	"github.com/google/uuid"
 )
 
 func Health(sa *ServerApp) gin.HandlerFunc {
@@ -52,8 +53,7 @@ func GetOrderByID(sa *ServerApp) gin.HandlerFunc {
 
 func PostNewOrder(sa *ServerApp) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var order types.Order
-		err := ctx.BindJSON(&order)
+		order, err := fromBody[types.Order](ctx)
 		if err != nil {
 			setErrorResponse(ctx, http.StatusBadRequest, err)
 			return
@@ -81,8 +81,64 @@ func PostNewOrder(sa *ServerApp) gin.HandlerFunc {
 	}
 }
 
+func PostNewRestaurant(sa *ServerApp) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		restaurant, err := fromBody[types.Restaurant](ctx)
+		if err != nil {
+			setErrorResponse(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		restaurant.ID = uuid.NewString()
+		err = sa.restaurantsRepo.CreateRestaurant(restaurant)
+		if err != nil {
+			setErrorResponse(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		ctx.JSON(http.StatusCreated, restaurant)
+	}
+}
+
+func PostNewMenu(sa *ServerApp) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		menu, err := fromBody[types.Menu](ctx)
+		if err != nil {
+			setErrorResponse(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		// Set new ID for the menu and it's items
+		mID := uuid.NewString()
+		menu.ID = mID
+		for i := range menu.Items {
+			menu.Items[i].ID = uuid.NewString()
+			menu.Items[i].MenuID = mID
+		}
+
+		err = sa.restaurantsRepo.CreateMenu(menu)
+		if err != nil {
+			setErrorResponse(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		ctx.JSON(http.StatusCreated, menu)
+	}
+}
+
 func setErrorResponse(ctx *gin.Context, httpCode int, err error) {
 	ctx.JSON(httpCode, gin.H{
 		"error": err.Error(),
 	})
+}
+
+func fromBody[T any](ctx *gin.Context) (T, error) {
+	var result T
+
+	err := ctx.BindJSON(&result)
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }

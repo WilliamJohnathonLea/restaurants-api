@@ -9,7 +9,7 @@ type Menu struct {
 
 type MenuItem struct {
 	ID     string  `json:"id,omitempty"`
-	MenuID string  `json:"menuId"`
+	MenuID string  `json:"menuId,omitempty"`
 	Name   string  `json:"name"`
 	Price  float64 `json:"price"`
 }
