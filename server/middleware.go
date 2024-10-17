@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/WilliamJohnathonLea/restaurants-api/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -39,7 +40,7 @@ func Authenticated(tokenKey string) gin.HandlerFunc {
 			return
 		}
 
-		parsedTkn, err := jwt.Parse(auth.Token, func(t *jwt.Token) (interface{}, error) {
+		parsedTkn, err := jwt.ParseWithClaims(auth.Token, &types.UserClaims{}, func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("invalid signing method")
 			}
@@ -49,7 +50,12 @@ func Authenticated(tokenKey string) gin.HandlerFunc {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		ctx.Set("user_token", parsedTkn)
+
+		if claims, ok := parsedTkn.Claims.(*types.UserClaims); ok {
+			ctx.Set("user_claims", *claims)
+		} else {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+		}
 	}
 }
 
