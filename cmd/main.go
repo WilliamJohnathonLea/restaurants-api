@@ -73,7 +73,7 @@ func main() {
 		server.WithAuthRoute("GET", "/orders", server.GetOrders),
 		server.WithAuthRoute("GET", "/orders/:id", server.GetOrderByID),
 		server.WithAuthRoute("POST", "/restaurants", server.PostNewRestaurant),
-		// server.WithAuthRoute("GET", "/restaurants/:id", )
+		server.WithAuthRoute("GET", "/restaurants/:id", server.GetRestaurantByID),
 		server.WithAuthRoute("POST", "/restaurants/:id/menus", server.PostNewMenu),
 	)
 

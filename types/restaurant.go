@@ -7,5 +7,5 @@ type Restaurant struct {
 
 type RestaurantMenus struct {
 	Restaurant Restaurant `json:"restaurant"`
-	Menus      []Menu     `json:"menus"`
+	Menus      []Menu     `json:"menus,omitempty"`
 }

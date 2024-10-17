@@ -126,6 +126,36 @@ func PostNewMenu(sa *ServerApp) gin.HandlerFunc {
 	}
 }
 
+func GetRestaurantByID(sa *ServerApp) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		rID := ctx.Param("id")
+		withMenus, exists := ctx.GetQuery("withMenus")
+
+		var rm types.RestaurantMenus
+		var restaurant types.Restaurant
+		var err error
+
+		if exists && withMenus == "true" {
+			rm, err = sa.restaurantsRepo.GetRestaurantMenusByID(rID)
+		} else {
+			restaurant, err = sa.restaurantsRepo.GetRestaurantByID(rID)
+			rm.Restaurant = restaurant
+		}
+
+		if err == dbr.ErrNotFound {
+			setErrorResponse(ctx, http.StatusNotFound, err)
+			return
+		}
+
+		if err != nil {
+			setErrorResponse(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, rm)
+	}
+}
+
 func setErrorResponse(ctx *gin.Context, httpCode int, err error) {
 	ctx.JSON(httpCode, gin.H{
 		"error": err.Error(),
